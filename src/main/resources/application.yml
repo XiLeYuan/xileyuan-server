@@ -1,0 +1,25 @@
+spring:
+  # 数据库配置
+  datasource:
+    url: jdbc:mysql://localhost:3306/demo
+    username: root
+    password: your_password
+
+  # JPA配置
+  jpa:
+    hibernate:
+      ddl-auto: update  # 自动更新数据库表结构
+    show-sql: true      # 显示SQL语句
+
+  # 其他Spring配置
+  application:
+    name: demo
+
+# 服务器配置
+server:
+  port: 8080           # 服务器端口
+
+# 日志配置
+logging:
+  level:
+    com.xly.marry: DEBUG  # 设置日志级别
