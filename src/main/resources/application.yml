@@ -1,19 +1,24 @@
 spring:
   # 数据库配置
   datasource:
-    url: jdbc:mysql://localhost:3306/demo
+    url: jdbc:mysql://localhost:3306/marry?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
     username: root
-    password: your_password
+    password: MyPassword@123
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
   # JPA配置
   jpa:
     hibernate:
       ddl-auto: update  # 自动更新数据库表结构
     show-sql: true      # 显示SQL语句
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
 
   # 其他Spring配置
   application:
-    name: demo
+    name: marry
 
 # 服务器配置
 server:
