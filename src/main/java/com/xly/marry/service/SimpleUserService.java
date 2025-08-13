@@ -1,4 +1,3 @@
-// src/main/java/com/xly/marry/service/UserService.java
 package com.xly.marry.service;
 
 import com.xly.marry.dto.AuthResponse;
@@ -6,27 +5,20 @@ import com.xly.marry.dto.LoginRequest;
 import com.xly.marry.dto.RegisterRequest;
 import com.xly.marry.entity.User;
 import com.xly.marry.repository.UserRepository;
-import com.xly.marry.security.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.DigestUtils;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
 @Transactional
-public class UserService {
+public class SimpleUserService {
     
     @Autowired
     private UserRepository userRepository;
-    
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    
-    @Autowired
-    private JwtTokenProvider jwtTokenProvider;
     
     public AuthResponse register(RegisterRequest request) {
         // 验证密码确认
@@ -53,7 +45,8 @@ public class UserService {
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        // 简单的MD5加密（生产环境建议使用BCrypt）
+        user.setPassword(DigestUtils.md5DigestAsHex(request.getPassword().getBytes()));
         user.setPhoneNumber(request.getPhoneNumber());
         user.setNickname(request.getNickname() != null ? request.getNickname() : request.getUsername());
         user.setAvatarUrl(request.getAvatarUrl());
@@ -91,9 +84,9 @@ public class UserService {
         // 保存用户
         User savedUser = userRepository.save(user);
         
-        // 生成令牌
-        String token = jwtTokenProvider.generateTokenFromUsername(savedUser.getUsername());
-        String refreshToken = jwtTokenProvider.generateRefreshToken(savedUser.getUsername());
+        // 生成简单的令牌（实际应该使用JWT）
+        String token = "token_" + savedUser.getId() + "_" + System.currentTimeMillis();
+        String refreshToken = "refresh_" + savedUser.getId() + "_" + System.currentTimeMillis();
         
         // 更新最后登录时间
         savedUser.setLastLoginTime(LocalDateTime.now());
@@ -128,7 +121,8 @@ public class UserService {
         User user = userOpt.get();
         
         // 验证密码
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        String encryptedPassword = DigestUtils.md5DigestAsHex(request.getPassword().getBytes());
+        if (!user.getPassword().equals(encryptedPassword)) {
             throw new RuntimeException("用户名或密码错误");
         }
         
@@ -137,9 +131,9 @@ public class UserService {
             throw new RuntimeException("账户已被禁用");
         }
         
-        // 生成令牌
-        String token = jwtTokenProvider.generateTokenFromUsername(user.getUsername());
-        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getUsername());
+        // 生成简单的令牌
+        String token = "token_" + user.getId() + "_" + System.currentTimeMillis();
+        String refreshToken = "refresh_" + user.getId() + "_" + System.currentTimeMillis();
         
         // 更新最后登录时间
         user.setLastLoginTime(LocalDateTime.now());
@@ -175,4 +169,4 @@ public class UserService {
     public Optional<User> findById(Long id) {
         return userRepository.findById(id);
     }
-}
+} 
