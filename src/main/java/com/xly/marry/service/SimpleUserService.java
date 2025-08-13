@@ -449,6 +449,69 @@ public class SimpleUserService {
         return response;
     }
     
+    public AuthResponse phoneLoginOrRegister(String phoneNumber) {
+        // 查找用户是否存在
+        Optional<User> userOpt = userRepository.findByPhoneNumber(phoneNumber);
+        
+        if (userOpt.isPresent()) {
+            // 用户存在，执行登录
+            User user = userOpt.get();
+            
+            // 检查用户是否被禁用
+            if (!user.getIsActive()) {
+                throw new RuntimeException("账户已被禁用");
+            }
+            
+            // 生成令牌
+            String token = "token_" + user.getId() + "_" + System.currentTimeMillis();
+            String refreshToken = "refresh_" + user.getId() + "_" + System.currentTimeMillis();
+            
+            // 更新最后登录时间
+            user.setLastLoginTime(LocalDateTime.now());
+            userRepository.save(user);
+            
+            // 构建响应
+            AuthResponse.UserInfo userInfo = new AuthResponse.UserInfo();
+            userInfo.setId(user.getId());
+            userInfo.setUsername(user.getUsername());
+            userInfo.setEmail(user.getEmail());
+            userInfo.setNickname(user.getNickname());
+            userInfo.setAvatarUrl(user.getAvatarUrl());
+            userInfo.setRole(user.getRole().name());
+            userInfo.setIsVerified(user.getIsVerified());
+            
+            AuthResponse response = new AuthResponse();
+            response.setToken(token);
+            response.setRefreshToken(refreshToken);
+            response.setExpiresIn(86400000L); // 24小时
+            response.setUserInfo(userInfo);
+            response.setMessage("登录成功");
+            
+            return response;
+        } else {
+            // 用户不存在，创建临时用户开始注册流程
+            User newUser = new User();
+            newUser.setPhoneNumber(phoneNumber);
+            newUser.setUsername("temp_" + phoneNumber);
+            newUser.setEmail("temp_" + phoneNumber + "@temp.com");
+            newUser.setPassword("temp_password");
+            newUser.setRegistrationStep(0);
+            newUser.setIsActive(true);
+            
+            User savedUser = userRepository.save(newUser);
+            
+            // 生成临时令牌
+            String token = "temp_token_" + savedUser.getId() + "_" + System.currentTimeMillis();
+            
+            AuthResponse response = new AuthResponse();
+            response.setToken(token);
+            response.setExpiresIn(86400000L); // 24小时
+            response.setMessage("开始注册流程");
+            
+            return response;
+        }
+    }
+    
     public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
     }

@@ -70,12 +70,62 @@ public class UserService {
         user.setAge(request.getAge());
         user.setHeight(request.getHeight());
         user.setWeight(request.getWeight());
-        user.setEducationLevel(request.getEducationLevel());
-        user.setOccupation(request.getOccupation());
-        user.setIncomeLevel(request.getIncomeLevel());
-        user.setCity(request.getCity());
-        user.setProvince(request.getProvince());
+        user.setIsWeightPrivate(request.getIsWeightPrivate());
         
+        if (request.getEducationLevel() != null) {
+            try {
+                user.setEducationLevel(User.EducationLevel.valueOf(request.getEducationLevel().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("无效的学历值");
+            }
+        }
+        
+        user.setSchool(request.getSchool());
+        
+        if (request.getCompanyType() != null) {
+            try {
+                user.setCompanyType(User.CompanyType.valueOf(request.getCompanyType().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("无效的公司类型值");
+            }
+        }
+        
+        user.setOccupation(request.getOccupation());
+        
+        if (request.getIncomeLevel() != null) {
+            try {
+                user.setIncomeLevel(User.IncomeLevel.valueOf(request.getIncomeLevel().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("无效的收入水平值");
+            }
+        }
+        
+        // 地理位置
+        user.setCurrentProvince(request.getCurrentProvince());
+        user.setCurrentCity(request.getCurrentCity());
+        user.setCurrentDistrict(request.getCurrentDistrict());
+        user.setHometownProvince(request.getHometownProvince());
+        user.setHometownCity(request.getHometownCity());
+        user.setHometownDistrict(request.getHometownDistrict());
+        
+        // 资产状况
+        if (request.getHouseStatus() != null) {
+            try {
+                user.setHouseStatus(User.HouseStatus.valueOf(request.getHouseStatus().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("无效的购房状态值");
+            }
+        }
+        
+        if (request.getCarStatus() != null) {
+            try {
+                user.setCarStatus(User.CarStatus.valueOf(request.getCarStatus().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("无效的购车状态值");
+            }
+        }
+        
+        // 婚姻状况
         if (request.getMaritalStatus() != null) {
             try {
                 user.setMaritalStatus(User.MaritalStatus.valueOf(request.getMaritalStatus().toUpperCase()));
@@ -84,9 +134,49 @@ public class UserService {
             }
         }
         
-        user.setHasChildren(request.getHasChildren());
+        if (request.getChildrenStatus() != null) {
+            try {
+                user.setChildrenStatus(User.ChildrenStatus.valueOf(request.getChildrenStatus().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("无效的子女状况值");
+            }
+        }
+        
+        // 恋爱观念
+        if (request.getLoveAttitude() != null) {
+            try {
+                user.setLoveAttitude(User.LoveAttitude.valueOf(request.getLoveAttitude().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("无效的恋爱态度值");
+            }
+        }
+        
+        user.setPreferredAgeMin(request.getPreferredAgeMin());
+        user.setPreferredAgeMax(request.getPreferredAgeMax());
+        
+        if (request.getMarriagePlan() != null) {
+            try {
+                user.setMarriagePlan(User.MarriagePlan.valueOf(request.getMarriagePlan().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("无效的结婚计划值");
+            }
+        }
+        
+        // 个人介绍
         user.setSelfIntroduction(request.getSelfIntroduction());
+        user.setLifestyle(request.getLifestyle());
+        user.setIdealPartner(request.getIdealPartner());
         user.setHobbies(request.getHobbies());
+        
+        // 照片和标签
+        user.setLifePhotos(request.getLifePhotos());
+        user.setUserTags(request.getUserTags());
+        user.setPreferredTags(request.getPreferredTags());
+        
+        // 实名认证
+        user.setRealName(request.getRealName());
+        user.setIdCardNumber(request.getIdCardNumber());
+        user.setRegistrationStep(request.getRegistrationStep());
         
         // 保存用户
         User savedUser = userRepository.save(user);
