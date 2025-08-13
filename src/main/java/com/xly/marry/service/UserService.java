@@ -6,7 +6,6 @@ import com.xly.marry.dto.LoginRequest;
 import com.xly.marry.dto.RegisterRequest;
 import com.xly.marry.entity.User;
 import com.xly.marry.repository.UserRepository;
-import com.xly.marry.security.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,9 +23,6 @@ public class UserService {
     
     @Autowired
     private PasswordEncoder passwordEncoder;
-    
-    @Autowired
-    private JwtTokenProvider jwtTokenProvider;
     
     public AuthResponse register(RegisterRequest request) {
         // 验证密码确认
@@ -181,9 +177,9 @@ public class UserService {
         // 保存用户
         User savedUser = userRepository.save(user);
         
-        // 生成令牌
-        String token = jwtTokenProvider.generateTokenFromUsername(savedUser.getUsername());
-        String refreshToken = jwtTokenProvider.generateRefreshToken(savedUser.getUsername());
+        // 生成简单的令牌（不使用JWT）
+        String token = "token_" + savedUser.getId() + "_" + System.currentTimeMillis();
+        String refreshToken = "refresh_" + savedUser.getId() + "_" + System.currentTimeMillis();
         
         // 更新最后登录时间
         savedUser.setLastLoginTime(LocalDateTime.now());
@@ -227,9 +223,9 @@ public class UserService {
             throw new RuntimeException("账户已被禁用");
         }
         
-        // 生成令牌
-        String token = jwtTokenProvider.generateTokenFromUsername(user.getUsername());
-        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getUsername());
+        // 生成简单的令牌（不使用JWT）
+        String token = "token_" + user.getId() + "_" + System.currentTimeMillis();
+        String refreshToken = "refresh_" + user.getId() + "_" + System.currentTimeMillis();
         
         // 更新最后登录时间
         user.setLastLoginTime(LocalDateTime.now());

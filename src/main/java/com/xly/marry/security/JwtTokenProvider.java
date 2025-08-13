@@ -5,12 +5,12 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Component;
+// import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
 
-@Component
+// @Component  // 暂时注释掉，避免在Spring Security禁用时创建bean
 public class JwtTokenProvider {
     
     @Value("${app.jwt.secret:defaultSecretKey}")
