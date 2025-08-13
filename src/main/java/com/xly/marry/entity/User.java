@@ -3,6 +3,7 @@ package com.xly.marry.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -297,6 +298,7 @@ public class User implements UserDetails {
         }
     }
     
+    @Getter
     public enum IncomeLevel {
         BELOW_50K("5万以下"),
         FIVE_TO_TEN("5-10万"),
@@ -311,10 +313,7 @@ public class User implements UserDetails {
         IncomeLevel(String displayName) {
             this.displayName = displayName;
         }
-        
-        public String getDisplayName() {
-            return displayName;
-        }
+
     }
     
     public enum HouseStatus {
