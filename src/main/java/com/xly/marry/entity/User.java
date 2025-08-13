@@ -338,15 +338,13 @@ public class User implements UserDetails {
         CAR_NO_LOAN("已购车无贷款"),
         CAR_WITH_LOAN("已购车有贷款");
         
+        @Getter
         private final String displayName;
         
         CarStatus(String displayName) {
             this.displayName = displayName;
         }
-        
-        public String getDisplayName() {
-            return displayName;
-        }
+
     }
     
     public enum MaritalStatus {
