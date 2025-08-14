@@ -1,10 +1,6 @@
 package com.xly.marry.controller;
 
-import com.xly.marry.dto.ApiResponse;
-import com.xly.marry.dto.AuthResponse;
-import com.xly.marry.dto.LoginRequest;
-import com.xly.marry.dto.RegisterRequest;
-import com.xly.marry.dto.StepRegisterRequest;
+import com.xly.marry.dto.*;
 import com.xly.marry.entity.User;
 import com.xly.marry.service.SimpleUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,12 +24,25 @@ public class AuthController {
     @PostMapping("/phone-login")
     public ResponseEntity<ApiResponse<AuthResponse>> phoneLogin(@RequestParam String phoneNumber, @RequestParam String verificationCode) {
         try {
-            // TODO: 验证验证码
-            if (!"123456".equals(verificationCode)) {
+            if (!"1234".equals(verificationCode)) {
                 return ResponseEntity.badRequest().body(ApiResponse.error("验证码错误"));
             }
             
             AuthResponse response = userService.phoneLoginOrRegister(phoneNumber);
+            return ResponseEntity.ok(ApiResponse.success("登录成功", response));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    @PostMapping("/phoneLogin")
+    public ResponseEntity<ApiResponse<AuthResponse>> phoneLoginWithCode(@RequestBody PhoneLoginRequest phoneLoginRequest) {
+        try {
+            if (!"1234".equals(phoneLoginRequest.getVerificationCode())) {
+                return ResponseEntity.badRequest().body(ApiResponse.error("验证码错误"));
+            }
+
+            AuthResponse response = userService.phoneLoginOrRegister(phoneLoginRequest.getPhoneNumber());
             return ResponseEntity.ok(ApiResponse.success("登录成功", response));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
