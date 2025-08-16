@@ -150,7 +150,11 @@ public class SimpleUserService {
             case 1:
                 if (request.getGender() != null) {
                     try {
-                        user.setGender(User.Gender.valueOf(request.getGender().toUpperCase()));
+                        if (request.getGender().equals("1")) {
+                            user.setGender(User.Gender.MALE);
+                        } else {
+                            user.setGender(User.Gender.FEMALE);
+                        }
                     } catch (IllegalArgumentException e) {
                         throw new RuntimeException("无效的性别值");
                     }

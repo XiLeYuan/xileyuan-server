@@ -52,7 +52,7 @@ public class AuthController {
     /**
      * 分步注册（主要注册方式）
      */
-    @PostMapping("/step-register")
+    @PostMapping("/stepRegister")
     public ResponseEntity<ApiResponse<AuthResponse>> stepRegister(@RequestBody StepRegisterRequest request) {
         try {
             AuthResponse response = userService.stepRegister(request);

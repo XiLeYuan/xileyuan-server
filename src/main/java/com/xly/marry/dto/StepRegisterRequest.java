@@ -9,8 +9,7 @@ public class StepRegisterRequest {
     
     // 步骤0: 手机验证码登录
     private String phoneNumber;
-    private String verificationCode;
-    
+
     // 步骤1: 选择性别
     private String gender;
     
