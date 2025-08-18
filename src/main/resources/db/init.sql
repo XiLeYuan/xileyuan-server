@@ -125,24 +125,50 @@ CREATE TABLE IF NOT EXISTS login_logs (
     INDEX idx_login_time (login_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 创建用户偏好设置表
+-- 推荐卡片表
+CREATE TABLE IF NOT EXISTS recommendation_cards (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL COMMENT '推荐给谁（当前用户）',
+    recommended_user_id BIGINT NOT NULL COMMENT '被推荐的人',
+    match_score INT COMMENT '匹配度分数 (0-100)',
+    match_reasons TEXT COMMENT '推荐原因标签（JSON格式）',
+    status ENUM('PENDING', 'LIKED', 'PASSED', 'MATCHED') DEFAULT 'PENDING' COMMENT '推荐状态',
+    user_action ENUM('LIKE', 'PASS', 'SUPER_LIKE') COMMENT '用户操作',
+    is_viewed BOOLEAN DEFAULT FALSE COMMENT '是否已查看',
+    viewed_at DATETIME COMMENT '查看时间',
+    action_at DATETIME COMMENT '操作时间',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    
+    INDEX idx_user_id (user_id),
+    INDEX idx_recommended_user_id (recommended_user_id),
+    INDEX idx_user_status (user_id, status),
+    INDEX idx_user_action (user_id, user_action),
+    INDEX idx_created_at (created_at),
+    UNIQUE KEY uk_user_recommended (user_id, recommended_user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='推荐卡片表';
+
+-- 用户偏好表
 CREATE TABLE IF NOT EXISTS user_preferences (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    user_id BIGINT NOT NULL UNIQUE,
-    min_age INT DEFAULT 18,
-    max_age INT DEFAULT 100,
-    preferred_gender ENUM('MALE', 'FEMALE', 'BOTH'),
-    min_height INT DEFAULT 150,
-    max_height INT DEFAULT 200,
-    preferred_cities TEXT, -- JSON格式存储多个城市
-    education_requirements TEXT, -- JSON格式存储教育要求
-    income_requirements TEXT, -- JSON格式存储收入要求
-    has_children_preference ENUM('YES', 'NO', 'DONT_CARE'),
-    created_at DATETIME NOT NULL,
-    updated_at DATETIME NOT NULL,
+    user_id BIGINT NOT NULL COMMENT '用户ID',
+    min_age INT COMMENT '最小年龄',
+    max_age INT COMMENT '最大年龄',
+    preferred_gender ENUM('MALE', 'FEMALE') COMMENT '偏好性别',
+    min_height INT COMMENT '最小身高',
+    max_height INT COMMENT '最大身高',
+    preferred_cities TEXT COMMENT '偏好城市（JSON格式）',
+    education_requirements TEXT COMMENT '教育要求（JSON格式）',
+    income_requirements TEXT COMMENT '收入要求（JSON格式）',
+    has_children_preference ENUM('YES', 'NO', 'DONT_CARE') COMMENT '子女偏好',
+    max_distance INT COMMENT '最大距离（公里）',
+    only_verified_users BOOLEAN DEFAULT FALSE COMMENT '只看实名认证用户',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    UNIQUE KEY uk_user_id (user_id),
+    INDEX idx_user_id (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户偏好表';
 
 -- 创建用户标签表
 CREATE TABLE IF NOT EXISTS user_tags (
