@@ -258,6 +258,7 @@ public class User implements UserDetails {
         MALE, FEMALE
     }
     
+    @Getter
     public enum EducationLevel {
         DOCTOR("博士"),
         MASTER("硕士"),
@@ -270,12 +271,10 @@ public class User implements UserDetails {
         EducationLevel(String displayName) {
             this.displayName = displayName;
         }
-        
-        public String getDisplayName() {
-            return displayName;
-        }
+
     }
     
+    @Getter
     public enum CompanyType {
         STATE_OWNED("国企"),
         INSTITUTION("事业单位"),
@@ -292,10 +291,7 @@ public class User implements UserDetails {
         CompanyType(String displayName) {
             this.displayName = displayName;
         }
-        
-        public String getDisplayName() {
-            return displayName;
-        }
+
     }
     
     @Getter
@@ -316,6 +312,7 @@ public class User implements UserDetails {
 
     }
     
+    @Getter
     public enum HouseStatus {
         NO_HOUSE("未购房"),
         HOUSE_NO_LOAN("已购房无贷款"),
@@ -327,10 +324,7 @@ public class User implements UserDetails {
         HouseStatus(String displayName) {
             this.displayName = displayName;
         }
-        
-        public String getDisplayName() {
-            return displayName;
-        }
+
     }
     
     public enum CarStatus {
@@ -347,6 +341,7 @@ public class User implements UserDetails {
 
     }
     
+    @Getter
     public enum MaritalStatus {
         SINGLE("未婚"),
         DIVORCED("离异"),
@@ -357,12 +352,10 @@ public class User implements UserDetails {
         MaritalStatus(String displayName) {
             this.displayName = displayName;
         }
-        
-        public String getDisplayName() {
-            return displayName;
-        }
+
     }
     
+    @Getter
     public enum ChildrenStatus {
         NO_CHILDREN("没有孩子"),
         CHILDREN_WITH_SELF("有孩子随本人"),
@@ -373,12 +366,10 @@ public class User implements UserDetails {
         ChildrenStatus(String displayName) {
             this.displayName = displayName;
         }
-        
-        public String getDisplayName() {
-            return displayName;
-        }
+
     }
     
+    @Getter
     public enum LoveAttitude {
         WANT_MARRY_SOON("短期内想结婚"),
         SERIOUS_LOVE_MARRY("认真谈场恋爱，合适就考虑结婚"),
@@ -390,12 +381,10 @@ public class User implements UserDetails {
         LoveAttitude(String displayName) {
             this.displayName = displayName;
         }
-        
-        public String getDisplayName() {
-            return displayName;
-        }
+
     }
     
+    @Getter
     public enum MarriagePlan {
         WITHIN_ONE_YEAR("一年内"),
         WITHIN_TWO_YEARS("两年内"),
@@ -407,10 +396,7 @@ public class User implements UserDetails {
         MarriagePlan(String displayName) {
             this.displayName = displayName;
         }
-        
-        public String getDisplayName() {
-            return displayName;
-        }
+
     }
     
     public enum UserRole {

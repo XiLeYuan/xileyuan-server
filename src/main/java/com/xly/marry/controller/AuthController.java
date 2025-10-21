@@ -21,19 +21,6 @@ public class AuthController {
      * 手机验证码登录/注册（合二为一）
      * 如果用户存在则登录，不存在则创建临时用户开始注册流程
      */
-    @PostMapping("/phone-login")
-    public ResponseEntity<ApiResponse<AuthResponse>> phoneLogin(@RequestParam String phoneNumber, @RequestParam String verificationCode) {
-        try {
-            if (!"1234".equals(verificationCode)) {
-                return ResponseEntity.badRequest().body(ApiResponse.error("验证码错误"));
-            }
-            
-            AuthResponse response = userService.phoneLoginOrRegister(phoneNumber);
-            return ResponseEntity.ok(ApiResponse.success("登录成功", response));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
-        }
-    }
 
     @PostMapping("/phoneLogin")
     public ResponseEntity<ApiResponse<AuthResponse>> phoneLoginWithCode(@RequestBody PhoneLoginRequest phoneLoginRequest) {
