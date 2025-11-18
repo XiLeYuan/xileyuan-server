@@ -3,10 +3,13 @@ package com.xly.marry.controller;
 import com.xly.marry.dto.*;
 import com.xly.marry.entity.User;
 import com.xly.marry.service.SimpleUserService;
+import com.xly.marry.service.TokenService;
+import com.xly.marry.util.TokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
 
 @RestController
@@ -17,13 +20,17 @@ public class AuthController {
     @Autowired
     private SimpleUserService userService;
     
+    @Autowired
+    private TokenService tokenService;
+    
     /**
      * 手机验证码登录/注册（合二为一）
      * 如果用户存在则登录，不存在则创建临时用户开始注册流程
      */
 
     @PostMapping("/phoneLogin")
-    public ResponseEntity<ApiResponse<AuthResponse>> phoneLoginWithCode(@RequestBody PhoneLoginRequest phoneLoginRequest) {
+    public ResponseEntity<ApiResponse<AuthResponse>> phoneLoginWithCode(
+            @RequestBody PhoneLoginRequest phoneLoginRequest) {
         try {
             if (!"1234".equals(phoneLoginRequest.getVerificationCode())) {
                 return ResponseEntity.badRequest().body(ApiResponse.error("验证码错误"));
@@ -40,9 +47,15 @@ public class AuthController {
      * 分步注册（主要注册方式）
      */
     @PostMapping("/stepRegister")
-    public ResponseEntity<ApiResponse<AuthResponse>> stepRegister(@RequestBody StepRegisterRequest request) {
+    public ResponseEntity<ApiResponse<AuthResponse>> stepRegister(
+            @RequestBody StepRegisterRequest request,
+            HttpServletRequest httpRequest) {
         try {
-            AuthResponse response = userService.stepRegister(request);
+            String token = TokenUtil.getTokenFromRequest(httpRequest);
+            if (token == null || token.isEmpty()) {
+                return ResponseEntity.status(401).body(ApiResponse.error("请先登录"));
+            }
+            AuthResponse response = userService.stepRegister(request, token);
             return ResponseEntity.ok(ApiResponse.success("步骤完成", response));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
@@ -163,6 +176,86 @@ public class AuthController {
             } else {
                 return ResponseEntity.ok(ApiResponse.success(java.util.Map.of("exists", false)));
             }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
+    }
+    
+    /**
+     * 获取当前登录用户信息
+     */
+    @GetMapping("/current-user")
+    public ResponseEntity<ApiResponse<AuthResponse.UserInfo>> getCurrentUser(HttpServletRequest request) {
+        try {
+            User user = TokenUtil.getUserFromRequest(request);
+            if (user == null) {
+                return ResponseEntity.status(401).body(ApiResponse.error("未登录或 token 已过期"));
+            }
+            
+            AuthResponse.UserInfo userInfo = new AuthResponse.UserInfo();
+            userInfo.setId(user.getId());
+            userInfo.setUsername(user.getUsername());
+            userInfo.setEmail(user.getEmail());
+            userInfo.setNickname(user.getNickname());
+            userInfo.setAvatarUrl(user.getAvatarUrl());
+            userInfo.setRole(user.getRole().name());
+            userInfo.setIsVerified(user.getIsVerified());
+            
+            return ResponseEntity.ok(ApiResponse.success("获取成功", userInfo));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
+    }
+    
+    /**
+     * 登出
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<String>> logout(HttpServletRequest request) {
+        try {
+            String token = TokenUtil.getTokenFromRequest(request);
+            if (token != null && !token.isEmpty()) {
+                tokenService.removeToken(token);
+            }
+            return ResponseEntity.ok(ApiResponse.success("登出成功", "已成功登出"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
+    }
+    
+    /**
+     * 刷新 token
+     */
+    @PostMapping("/refresh-token")
+    public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(HttpServletRequest request) {
+        try {
+            String oldToken = TokenUtil.getTokenFromRequest(request);
+            if (oldToken == null || oldToken.isEmpty()) {
+                return ResponseEntity.status(401).body(ApiResponse.error("未提供 token"));
+            }
+            
+            String newToken = tokenService.refreshToken(oldToken);
+            if (newToken == null) {
+                return ResponseEntity.status(401).body(ApiResponse.error("token 无效或已过期"));
+            }
+            
+            User user = tokenService.validateToken(newToken);
+            AuthResponse.UserInfo userInfo = new AuthResponse.UserInfo();
+            userInfo.setId(user.getId());
+            userInfo.setUsername(user.getUsername());
+            userInfo.setEmail(user.getEmail());
+            userInfo.setNickname(user.getNickname());
+            userInfo.setAvatarUrl(user.getAvatarUrl());
+            userInfo.setRole(user.getRole().name());
+            userInfo.setIsVerified(user.getIsVerified());
+            
+            AuthResponse response = new AuthResponse();
+            response.setToken(newToken);
+            response.setTokenType("Bearer");
+            response.setExpiresIn(86400000L);
+            response.setUserInfo(userInfo);
+            
+            return ResponseEntity.ok(ApiResponse.success("刷新成功", response));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }

@@ -26,6 +26,9 @@ public class SimpleUserService {
     @Autowired
     private ObjectMapper objectMapper;
     
+    @Autowired
+    private TokenService tokenService;
+    
     public AuthResponse register(RegisterRequest request) {
         // 验证密码确认
         if (!request.getPassword().equals(request.getConfirmPassword())) {
@@ -90,10 +93,14 @@ public class SimpleUserService {
         return response;
     }
     
-    public AuthResponse stepRegister(StepRegisterRequest request) {
-        // 根据步骤处理注册信息
-        User user = null;
+    public AuthResponse stepRegister(StepRegisterRequest request, String token) {
+        // 验证 token 并获取用户
+        User user = tokenService.validateToken(token);
+        if (user == null) {
+            throw new RuntimeException("token 无效或已过期");
+        }
         
+        // 根据步骤处理注册信息
         if (request.getStep() == 0) {
             // 步骤0: 手机验证码登录，创建临时用户
             user = new User();
@@ -103,10 +110,13 @@ public class SimpleUserService {
             user.setPassword("temp_password");
             user.setRegistrationStep(0);
             user = userRepository.save(user);
+            // 生成新 token
+            token = tokenService.generateToken(user);
         } else {
-            // 查找现有用户
-            user = userRepository.findByPhoneNumber(request.getPhoneNumber())
-                    .orElseThrow(() -> new RuntimeException("用户不存在"));
+            // 验证手机号是否匹配
+            if (!user.getPhoneNumber().equals(request.getPhoneNumber())) {
+                throw new RuntimeException("手机号不匹配");
+            }
         }
         
         // 根据步骤更新用户信息
@@ -115,11 +125,14 @@ public class SimpleUserService {
         // 保存用户
         User savedUser = userRepository.save(user);
         
-        // 如果是最后一步，生成完整令牌
+        // 刷新 token（延长过期时间）
+        token = tokenService.refreshToken(token);
+        if (token == null) {
+            token = tokenService.generateToken(savedUser);
+        }
+        
+        // 如果是最后一步，返回完整用户信息
         if (request.getStep() == 16) {
-            String token = "token_" + savedUser.getId() + "_" + System.currentTimeMillis();
-            String refreshToken = "refresh_" + savedUser.getId() + "_" + System.currentTimeMillis();
-            
             AuthResponse.UserInfo userInfo = new AuthResponse.UserInfo();
             userInfo.setId(savedUser.getId());
             userInfo.setUsername(savedUser.getUsername());
@@ -131,16 +144,18 @@ public class SimpleUserService {
             
             AuthResponse response = new AuthResponse();
             response.setToken(token);
-            response.setRefreshToken(refreshToken);
-            response.setExpiresIn(86400000L);
+            response.setTokenType("Bearer");
             response.setUserInfo(userInfo);
+            response.setExpiresIn(86400000L);
+            response.setMessage("注册完成");
             
             return response;
         }
         
         // 返回步骤完成响应
         AuthResponse response = new AuthResponse();
-        response.setToken("step_token_" + savedUser.getId());
+        response.setToken(token);
+        response.setTokenType("Bearer");
         response.setMessage("步骤" + request.getStep() + "完成");
         return response;
     }
@@ -426,13 +441,12 @@ public class SimpleUserService {
             throw new RuntimeException("账户已被禁用");
         }
         
-        // 生成简单的令牌
-        String token = "token_" + user.getId() + "_" + System.currentTimeMillis();
-        String refreshToken = "refresh_" + user.getId() + "_" + System.currentTimeMillis();
-        
         // 更新最后登录时间
         user.setLastLoginTime(LocalDateTime.now());
         userRepository.save(user);
+        
+        // 生成 token
+        String token = tokenService.generateToken(user);
         
         // 构建响应
         AuthResponse.UserInfo userInfo = new AuthResponse.UserInfo();
@@ -446,9 +460,10 @@ public class SimpleUserService {
         
         AuthResponse response = new AuthResponse();
         response.setToken(token);
-        response.setRefreshToken(refreshToken);
+        response.setTokenType("Bearer");
         response.setExpiresIn(86400000L); // 24小时
         response.setUserInfo(userInfo);
+        response.setMessage("登录成功");
         
         return response;
     }
@@ -466,13 +481,12 @@ public class SimpleUserService {
                 throw new RuntimeException("账户已被禁用");
             }
             
-            // 生成令牌
-            String token = "token_" + user.getId() + "_" + System.currentTimeMillis();
-            String refreshToken = "refresh_" + user.getId() + "_" + System.currentTimeMillis();
-            
             // 更新最后登录时间
             user.setLastLoginTime(LocalDateTime.now());
             userRepository.save(user);
+            
+            // 生成 token
+            String token = tokenService.generateToken(user);
             
             // 构建响应
             AuthResponse.UserInfo userInfo = new AuthResponse.UserInfo();
@@ -486,7 +500,7 @@ public class SimpleUserService {
             
             AuthResponse response = new AuthResponse();
             response.setToken(token);
-            response.setRefreshToken(refreshToken);
+            response.setTokenType("Bearer");
             response.setExpiresIn(86400000L); // 24小时
             response.setUserInfo(userInfo);
             response.setMessage("登录成功");
@@ -504,11 +518,12 @@ public class SimpleUserService {
             
             User savedUser = userRepository.save(newUser);
             
-            // 生成临时令牌
-            String token = "temp_token_" + savedUser.getId() + "_" + System.currentTimeMillis();
+            // 生成临时 token
+            String token = tokenService.generateToken(savedUser);
             
             AuthResponse response = new AuthResponse();
             response.setToken(token);
+            response.setTokenType("Bearer");
             response.setExpiresIn(86400000L); // 24小时
             response.setMessage("开始注册流程");
             
