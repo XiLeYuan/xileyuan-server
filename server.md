@@ -1,6 +1,3 @@
-****
-
-
 # 🛠️nginx 服务
 1. 配置文件目录
    - /etc/nginx/conf.d
@@ -37,6 +34,15 @@
     }
 }
 
+# maven 打包正式上线版本
+
+mvn clean package -Pprod -DskipTests # 打包生产环境版本（不包含本地数据库配置）
+
+
+mvn clean package -Pprod -Dmaven.test.skip=true # 或者完全跳过测试
+
+
+mvn clean package -Pprod -DskipTests -X  # 详细构建信息
 
 
 # Nginx管理
