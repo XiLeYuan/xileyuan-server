@@ -261,4 +261,4 @@ INSERT INTO user_tags (name, category, display_name, created_at) VALUES
 
 -- 插入管理员用户（密码需要在实际使用时通过BCrypt加密）
 -- INSERT INTO users (username, email, password, nickname, role, created_at, updated_at) 
--- VALUES ('admin', 'admin@marry.com', '$2a$10$encrypted_password_here', '管理员', 'ADMIN', NOW(), NOW()); 
+-- VALUES ('admin', 'admin@marry.com', '$2a$10$encrypted_password_here', '管理员', 'ADMIN', NOW(), NOW());

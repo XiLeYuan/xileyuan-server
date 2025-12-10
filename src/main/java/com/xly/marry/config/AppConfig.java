@@ -16,4 +16,4 @@ public class AppConfig implements WebMvcConfigurer {
                 .allowCredentials(false)
                 .maxAge(3600);
     }
-} 
+}

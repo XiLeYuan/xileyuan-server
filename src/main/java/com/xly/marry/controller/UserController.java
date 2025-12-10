@@ -3,10 +3,12 @@ package com.xly.marry.controller;
 import com.xly.marry.dto.ApiResponse;
 import com.xly.marry.entity.User;
 import com.xly.marry.service.SimpleUserService;
+import com.xly.marry.util.TokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,14 +37,25 @@ public class UserController {
     }
     
     @GetMapping("/profile")
-    public ResponseEntity<ApiResponse<User>> getCurrentUserProfile() {
-        // 这里应该从JWT token中获取当前用户信息
-        return ResponseEntity.ok(ApiResponse.success("获取个人信息成功", null));
+    public ResponseEntity<ApiResponse<User>> getCurrentUserProfile(HttpServletRequest request) {
+        User currentUser = TokenUtil.getUserFromRequest(request);
+        if (currentUser == null) {
+            return ResponseEntity.status(401).body(ApiResponse.error("未登录或 token 已过期"));
+        }
+        return ResponseEntity.ok(ApiResponse.success("获取个人信息成功", currentUser));
     }
     
     @PutMapping("/profile")
-    public ResponseEntity<ApiResponse<User>> updateUserProfile(@RequestBody User user) {
-        // 这里应该验证当前用户身份并更新信息
-        return ResponseEntity.ok(ApiResponse.success("更新个人信息成功", null));
+    public ResponseEntity<ApiResponse<User>> updateUserProfile(@RequestBody User user, HttpServletRequest request) {
+        User currentUser = TokenUtil.getUserFromRequest(request);
+        if (currentUser == null) {
+            return ResponseEntity.status(401).body(ApiResponse.error("未登录或 token 已过期"));
+        }
+        // 只能更新自己的信息
+        if (!currentUser.getId().equals(user.getId())) {
+            return ResponseEntity.status(403).body(ApiResponse.error("无权修改其他用户信息"));
+        }
+        // TODO: 实现更新逻辑
+        return ResponseEntity.ok(ApiResponse.success("更新个人信息成功", user));
     }
 }

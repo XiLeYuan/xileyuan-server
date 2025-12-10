@@ -23,8 +23,8 @@ USE marry_db;
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/marry_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-    username: your_username  # 替换为你的MySQL用户名
-    password: your_password  # 替换为你的MySQL密码
+    username: root  # 替换为你的MySQL用户名
+    password: 'gl38OipIad!8'  # 替换为你的MySQL密码
 ```
 
 ### 4. 启动项目

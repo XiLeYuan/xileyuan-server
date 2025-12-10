@@ -1,0 +1,68 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/marry_db?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&characterEncoding=utf8
+    username: root
+    password: Zjl1990!@#
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+  security:
+    user:
+      name: admin
+      password: admin
+
+app:
+  jwt:
+    secret: marrySecretKey2024VeryLongSecretKeyForJWTTokenGeneration
+    expiration: 86400000  # 24 hours in milliseconds
+    refresh-expiration: 604800000  # 7 days in milliseconds
+  token:
+    expiration: 86400000  # Token 过期时间，24小时（毫秒）
+  payment:
+    notify-url: http://localhost:8080  # 支付回调地址
+    return-url: http://localhost:8080/payment/success  # 支付成功跳转地址
+    alipay:
+      app-id: your_alipay_app_id  # 支付宝应用ID
+      private-key: your_alipay_private_key  # 支付宝应用私钥
+      public-key: your_alipay_public_key  # 支付宝公钥
+      gateway-url: https://openapi.alipay.com/gateway.do  # 生产环境
+      # gateway-url: https://openapi.alipaydev.com/gateway.do  # 沙箱环境
+    wechat:
+      mch-id: your_wechat_mch_id  # 微信商户号
+      app-id: your_wechat_app_id  # 微信应用ID
+      api-key: your_wechat_api_key  # 微信API密钥
+      cert-path: /path/to/wechat/cert.p12  # 微信商户证书路径（可选）
+  aliyun:
+    sms:
+      #参考本地部署key-id和key-secret https://help.aliyun.com/zh/sms/developer-reference/how-to-use-api-quickly?spm=api-workbench.API%20Document.0.0.5ba06e6ehreHh0#1abf132996dmm
+      access-key-id: ${ALIBABA_CLOUD_ACCESS_KEY_ID}
+      access-key-secret: ${ALIBABA_CLOUD_ACCESS_KEY_SECRET}
+      sign-name: 河南喜乐缘网络科技
+      template-code: SMS_498720089
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+    session:
+      timeout: 24h  # Session 超时时间，24小时
+      cookie:
+        name: JSESSIONID
+        http-only: true
+        secure: false  # 生产环境建议设为 true（HTTPS）
+        same-site: lax
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+logging:
+  level:
+    com.xly.marry: DEBUG
+    org.springframework.security: DEBUG
