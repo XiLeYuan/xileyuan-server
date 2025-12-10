@@ -65,17 +65,14 @@ sudo tail -f  /usr/local/marrydb/app.log  # 结婚吧日志
 # 🛠️ 结婚吧业务
 1. **业务目录:**
 
-- /usr/local/marrydb 
+- cd /opt/app
+
 
 2. **部署命令:**
 
-- nohup java -Xms512m -Xmx1024m -jar marry-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod > app.log 2>&1 &
+- sudo sh deploy-prod.sh
 
-3. **停止服务命令:**
 
-```
-sudo ss -tulpn | grep :8080
-sudo kill -9 <进程PID>
-```
+
 
 
